@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/splash.dart';
 import 'package:flutter_application_1/widgets/counter.dart';
 import 'package:flutter_application_1/widgets/to_do_Box.dart';
 
@@ -11,7 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: TodoDay(), debugShowCheckedModeBanner: false);
+    return MaterialApp(home: SplashScreen(), debugShowCheckedModeBanner: false);
   }
 }
 
@@ -22,27 +23,8 @@ class Task {
   Task({required this.title, required this.status});
 }
 
-List allTask = [
-  Task(title: "call my sister", status: true),
-  Task(title: "study", status: false),
-  Task(title: "call mom", status: false),
-];
-
-// conter
-mixin CallFunction {
-  int calculateCompletedTask() {
-    int completedTask = 0;
-    for (var item in allTask) {
-      if (item.status) {
-        completedTask++;
-      }
-    }
-    return completedTask;
-  }
-}
-
 class TodoDay extends StatefulWidget {
-  TodoDay({super.key});
+  const TodoDay({super.key});
 
   @override
   State<TodoDay> createState() => TodoDayState();
@@ -63,10 +45,47 @@ class TodoDayState extends State<TodoDay> {
     });
   }
 
+  List allTask = [
+    Task(title: "call my sister", status: true),
+    Task(title: "study", status: false),
+    Task(title: "call mom", status: false),
+  ];
+
+  // conter
+
+  int calculateCompletedTask() {
+    int completedTask = 0;
+    for (var item in allTask) {
+      if (item.status) {
+        completedTask++;
+      }
+    }
+    return completedTask;
+  }
+
+  void changeStatus(int TaskIndex) {
+    setState(() {
+      allTask[TaskIndex].status = !allTask[TaskIndex].status;
+    });
+  }
+
+  void deletTask(int taskIndex) {
+    setState(() {
+      allTask.remove(allTask[taskIndex]);
+    });
+  }
+
+  void deleteAllTasks() {
+    setState(() {
+      allTask.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(83, 167, 251, 0.49),
+      backgroundColor: const Color.fromARGB(255, 132, 193, 243),
+     
       appBar: AppBar(
         title: Text(
           "To Do Day",
@@ -78,6 +97,18 @@ class TodoDayState extends State<TodoDay> {
         ),
         centerTitle: true,
         backgroundColor: Color.fromRGBO(42, 140, 238, 0.6),
+        actions: [
+          IconButton(
+            onPressed: () {
+              deleteAllTasks();
+            },
+            icon: Icon(
+              Icons.delete_forever,
+              size: 30,
+              color: const Color.fromARGB(255, 11, 3, 255),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -96,22 +127,17 @@ class TodoDayState extends State<TodoDay> {
                   child: Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.fromLTRB(10, 30, 10, 35),
-                        // padding: EdgeInsets.all(),
+                        margin: EdgeInsets.fromLTRB(10, 30, 10, 25),
 
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          // color: Colors.white,
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: TextField(
                           controller: myController,
+                          maxLength: 20,
 
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.all(20),
-                            // border: InputBorder.none,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                            ),
                             hintText: 'Enter the task',
                             hintStyle: TextStyle(
                               color: Colors.black,
@@ -137,8 +163,8 @@ class TodoDayState extends State<TodoDay> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
                           padding: EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 35,
+                            vertical: 15,
+                            horizontal: 30,
                           ),
                         ),
                         child: Text(
@@ -156,19 +182,39 @@ class TodoDayState extends State<TodoDay> {
         backgroundColor: const Color.fromARGB(255, 3, 79, 130),
         child: Icon(Icons.add, size: 35, color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        child: SizedBox(
-          width: double.infinity,
-          child: Column(
-            children: [
-              Counter(),
-
-              ...allTask.map(
-                (item) => ToDoBox(BoxTitle: item.title, DoneOrNo: item.status),
-              ),
-            ],
+      body: Column(
+        children: [
+          Counter(
+            alltodos: allTask.length,
+            allComplet: calculateCompletedTask(),
           ),
-        ),
+          allTask.isEmpty
+              ? Container(
+                  alignment: Alignment.center,
+                  height: 100,
+                  width: double.infinity,
+                  child: Text(
+                    "Please add the new task ",
+                    style: TextStyle(fontSize: 30, color: Colors.black),
+                  ),
+                )
+              : Container(
+                  height: 600,
+                 color: const Color. fromRGBO(83, 167, 251, 0.49),
+                  child: ListView.builder(
+                    itemCount: allTask.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return ToDoBox(
+                        BoxTitle: allTask[index].title,
+                        DoneOrNo: allTask[index].status,
+                        indexOfItem: index,
+                        changeStatus: changeStatus,
+                        deleteTask: deletTask,
+                      );
+                    },
+                  ),
+                ),
+        ],
       ),
     );
   }
